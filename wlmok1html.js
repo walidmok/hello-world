@@ -1,7 +1,16 @@
+// CodeMirror, copyright (c) by Marijn Haverbeke and others
+// Distributed under an MIT license: https://codemirror.net/LICENSE
+
+// This is CodeMirror (https://codemirror.net), a code editor
+// implemented in JavaScript on top of the browser's DOM.
+//
+// You can find some technical background for some of the code below
+// at http://marijnhaverbeke.nl/blog/#cm-internals .
+
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
-  (global.wlmok1 = factory());
+  (global.CodeMirror = factory());
 }(this, (function () { 'use strict';
 
   // Kludges for bugs and behavior differences that can't be feature
@@ -199,7 +208,7 @@
 
   // Returned or thrown by various protocols to signal 'I'm not
   // handling this'.
-  var Pass = {toString: function(){return "wlmok1.Pass"}};
+  var Pass = {toString: function(){return "CodeMirror.Pass"}};
 
   // Reused option objects for setSelection & friends
   var sel_dontScroll = {scroll: false}, sel_mouse = {origin: "*mouse"}, sel_move = {origin: "+move"};
@@ -559,14 +568,14 @@
     for (var i = 0; i < handlers.length; ++i) { handlers[i].apply(null, args); }
   }
 
-  // The DOM events that wlmok1 handles can be overridden by
+  // The DOM events that CodeMirror handles can be overridden by
   // registering a (non-DOM) handler on the editor for the event name,
   // and preventDefault-ing the event in that handler.
   function signalDOMEvent(cm, e, override) {
     if (typeof e == "string")
       { e = {type: e, preventDefault: function() { this.defaultPrevented = true; }}; }
     signal(cm, override || e.type, cm, e);
-    return e_defaultPrevented(e) || e.wlmok1Ignore
+    return e_defaultPrevented(e) || e.codemirrorIgnore
   }
 
   function signalCursorActivity(cm) {
@@ -1723,7 +1732,7 @@
     // is needed on Webkit to be able to get line-level bounding
     // rectangles for it (in measureChar).
     var content = eltP("span", null, null, webkit ? "padding-right: .1px" : null);
-    var builder = {pre: eltP("pre", [content], "wlmok1-line"), content: content,
+    var builder = {pre: eltP("pre", [content], "CodeMirror-line"), content: content,
                    col: 0, pos: 0, cm: cm,
                    trailingSpace: false,
                    splitSpaces: cm.getOption("lineWrapping")};
@@ -1935,7 +1944,7 @@
             if (m.startStyle && sp.from == pos) { spanStartStyle += " " + m.startStyle; }
             if (m.endStyle && sp.to == nextChange) { (endStyles || (endStyles = [])).push(m.endStyle, sp.to); }
             // support for the old title property
-            // https://github.com/wlmok1/wlmok1/pull/5673
+            // https://github.com/codemirror/CodeMirror/pull/5673
             if (m.title) { (attributes || (attributes = {})).title = m.title; }
             if (m.attributes) {
               for (var attr in m.attributes)
@@ -2110,7 +2119,7 @@
 
   function updateLineBackground(cm, lineView) {
     var cls = lineView.bgClass ? lineView.bgClass + " " + (lineView.line.bgClass || "") : lineView.line.bgClass;
-    if (cls) { cls += " wlmok1-linebackground"; }
+    if (cls) { cls += " CodeMirror-linebackground"; }
     if (lineView.background) {
       if (cls) { lineView.background.className = cls; }
       else { lineView.background.parentNode.removeChild(lineView.background); lineView.background = null; }
@@ -2172,7 +2181,7 @@
     }
     if (lineView.line.gutterClass) {
       var wrap = ensureLineWrapped(lineView);
-      lineView.gutterBackground = elt("div", null, "wlmok1-gutter-background " + lineView.line.gutterClass,
+      lineView.gutterBackground = elt("div", null, "CodeMirror-gutter-background " + lineView.line.gutterClass,
                                       ("left: " + (cm.options.fixedGutter ? dims.fixedPos : -dims.gutterTotalWidth) + "px; width: " + (dims.gutterTotalWidth) + "px"));
       cm.display.input.setUneditable(lineView.gutterBackground);
       wrap.insertBefore(lineView.gutterBackground, lineView.text);
@@ -2180,20 +2189,20 @@
     var markers = lineView.line.gutterMarkers;
     if (cm.options.lineNumbers || markers) {
       var wrap$1 = ensureLineWrapped(lineView);
-      var gutterWrap = lineView.gutter = elt("div", null, "wlmok1-gutter-wrapper", ("left: " + (cm.options.fixedGutter ? dims.fixedPos : -dims.gutterTotalWidth) + "px"));
+      var gutterWrap = lineView.gutter = elt("div", null, "CodeMirror-gutter-wrapper", ("left: " + (cm.options.fixedGutter ? dims.fixedPos : -dims.gutterTotalWidth) + "px"));
       cm.display.input.setUneditable(gutterWrap);
       wrap$1.insertBefore(gutterWrap, lineView.text);
       if (lineView.line.gutterClass)
         { gutterWrap.className += " " + lineView.line.gutterClass; }
-      if (cm.options.lineNumbers && (!markers || !markers["wlmok1-linenumbers"]))
+      if (cm.options.lineNumbers && (!markers || !markers["CodeMirror-linenumbers"]))
         { lineView.lineNumber = gutterWrap.appendChild(
           elt("div", lineNumberFor(cm.options, lineN),
-              "wlmok1-linenumber wlmok1-gutter-elt",
-              ("left: " + (dims.gutterLeft["wlmok1-linenumbers"]) + "px; width: " + (cm.display.lineNumInnerWidth) + "px"))); }
+              "CodeMirror-linenumber CodeMirror-gutter-elt",
+              ("left: " + (dims.gutterLeft["CodeMirror-linenumbers"]) + "px; width: " + (cm.display.lineNumInnerWidth) + "px"))); }
       if (markers) { for (var k = 0; k < cm.display.gutterSpecs.length; ++k) {
         var id = cm.display.gutterSpecs[k].className, found = markers.hasOwnProperty(id) && markers[id];
         if (found)
-          { gutterWrap.appendChild(elt("div", [found], "wlmok1-gutter-elt",
+          { gutterWrap.appendChild(elt("div", [found], "CodeMirror-gutter-elt",
                                      ("left: " + (dims.gutterLeft[id]) + "px; width: " + (dims.gutterWidth[id]) + "px"))); }
       } }
     }
@@ -2201,7 +2210,7 @@
 
   function updateLineWidgets(cm, lineView, dims) {
     if (lineView.alignable) { lineView.alignable = null; }
-    var isWidget = classTest("wlmok1-linewidget");
+    var isWidget = classTest("CodeMirror-linewidget");
     for (var node = lineView.node.firstChild, next = (void 0); node; node = next) {
       next = node.nextSibling;
       if (isWidget.test(node.className)) { lineView.node.removeChild(node); }
@@ -2234,7 +2243,7 @@
     if (!line.widgets) { return }
     var wrap = ensureLineWrapped(lineView);
     for (var i = 0, ws = line.widgets; i < ws.length; ++i) {
-      var widget = ws[i], node = elt("div", [widget.node], "wlmok1-linewidget" + (widget.className ? " " + widget.className : ""));
+      var widget = ws[i], node = elt("div", [widget.node], "CodeMirror-linewidget" + (widget.className ? " " + widget.className : ""));
       if (!widget.handleMouseEvents) { node.setAttribute("cm-ignore-events", "true"); }
       positionLineWidget(widget, node, lineView, dims);
       cm.display.input.setUneditable(node);
@@ -2294,7 +2303,7 @@
   function paddingVert(display) {return display.mover.offsetHeight - display.lineSpace.offsetHeight}
   function paddingH(display) {
     if (display.cachedPaddingH) { return display.cachedPaddingH }
-    var e = removeChildrenAndAdd(display.measure, elt("pre", "x", "wlmok1-line-like"));
+    var e = removeChildrenAndAdd(display.measure, elt("pre", "x", "CodeMirror-line-like"));
     var style = window.getComputedStyle ? window.getComputedStyle(e) : e.currentStyle;
     var data = {left: parseInt(style.paddingLeft), right: parseInt(style.paddingRight)};
     if (!isNaN(data.left) && !isNaN(data.right)) { display.cachedPaddingH = data; }
@@ -2863,7 +2872,7 @@
   function textHeight(display) {
     if (display.cachedTextHeight != null) { return display.cachedTextHeight }
     if (measureText == null) {
-      measureText = elt("pre", null, "wlmok1-line-like");
+      measureText = elt("pre", null, "CodeMirror-line-like");
       // Measure a bunch of lines, for browsers that compute
       // fractional heights.
       for (var i = 0; i < 49; ++i) {
@@ -2883,7 +2892,7 @@
   function charWidth(display) {
     if (display.cachedCharWidth != null) { return display.cachedCharWidth }
     var anchor = elt("span", "xxxxxxxxxx");
-    var pre = elt("pre", [anchor], "wlmok1-line-like");
+    var pre = elt("pre", [anchor], "CodeMirror-line-like");
     removeChildrenAndAdd(display.measure, pre);
     var rect = anchor.getBoundingClientRect(), width = (rect.right - rect.left) / 10;
     if (width > 2) { display.cachedCharWidth = width; }
@@ -3153,14 +3162,14 @@
   function drawSelectionCursor(cm, head, output) {
     var pos = cursorCoords(cm, head, "div", null, null, !cm.options.singleCursorHeightPerLine);
 
-    var cursor = output.appendChild(elt("div", "\u00a0", "wlmok1-cursor"));
+    var cursor = output.appendChild(elt("div", "\u00a0", "CodeMirror-cursor"));
     cursor.style.left = pos.left + "px";
     cursor.style.top = pos.top + "px";
     cursor.style.height = Math.max(0, pos.bottom - pos.top) * cm.options.cursorHeight + "px";
 
     if (pos.other) {
       // Secondary cursor, shown when on a 'jump' in bi-directional text
-      var otherCursor = output.appendChild(elt("div", "\u00a0", "wlmok1-cursor wlmok1-secondarycursor"));
+      var otherCursor = output.appendChild(elt("div", "\u00a0", "CodeMirror-cursor CodeMirror-secondarycursor"));
       otherCursor.style.display = "";
       otherCursor.style.left = pos.other.left + "px";
       otherCursor.style.top = pos.other.top + "px";
@@ -3182,7 +3191,7 @@
       if (top < 0) { top = 0; }
       top = Math.round(top);
       bottom = Math.round(bottom);
-      fragment.appendChild(elt("div", null, "wlmok1-selected", ("position: absolute; left: " + left + "px;\n                             top: " + top + "px; width: " + (width == null ? rightSide - left : width) + "px;\n                             height: " + (bottom - top) + "px")));
+      fragment.appendChild(elt("div", null, "CodeMirror-selected", ("position: absolute; left: " + left + "px;\n                             top: " + top + "px; width: " + (width == null ? rightSide - left : width) + "px;\n                             height: " + (bottom - top) + "px")));
     }
 
     function drawForLine(line, fromArg, toArg) {
@@ -3296,7 +3305,7 @@
     if (!cm.state.focused) {
       signal(cm, "focus", cm, e);
       cm.state.focused = true;
-      addClass(cm.display.wrapper, "wlmok1-focused");
+      addClass(cm.display.wrapper, "CodeMirror-focused");
       // This test prevents this from firing when a context
       // menu is closed (since the input reset would kill the
       // select-all detection hack)
@@ -3314,7 +3323,7 @@
     if (cm.state.focused) {
       signal(cm, "blur", cm, e);
       cm.state.focused = false;
-      rmClass(cm.display.wrapper, "wlmok1-focused");
+      rmClass(cm.display.wrapper, "CodeMirror-focused");
     }
     clearInterval(cm.display.blinker);
     setTimeout(function () { if (!cm.state.focused) { cm.display.shift = false; } }, 150);
@@ -3586,8 +3595,8 @@
 
   var NativeScrollbars = function(place, scroll, cm) {
     this.cm = cm;
-    var vert = this.vert = elt("div", [elt("div", null, null, "min-width: 1px")], "wlmok1-vscrollbar");
-    var horiz = this.horiz = elt("div", [elt("div", null, null, "height: 100%; min-height: 1px")], "wlmok1-hscrollbar");
+    var vert = this.vert = elt("div", [elt("div", null, null, "min-width: 1px")], "CodeMirror-vscrollbar");
+    var horiz = this.horiz = elt("div", [elt("div", null, null, "height: 100%; min-height: 1px")], "CodeMirror-hscrollbar");
     vert.tabIndex = horiz.tabIndex = -1;
     place(vert); place(horiz);
 
@@ -4263,7 +4272,7 @@
     var doc = cm.doc, last = lineNumberFor(cm.options, doc.first + doc.size - 1), display = cm.display;
     if (last.length != display.lineNumChars) {
       var test = display.measure.appendChild(elt("div", [elt("div", last)],
-                                                 "wlmok1-linenumber wlmok1-gutter-elt"));
+                                                 "CodeMirror-linenumber CodeMirror-gutter-elt"));
       var innerW = test.firstChild.offsetWidth, padding = test.offsetWidth - innerW;
       display.lineGutter.style.width = "";
       display.lineNumInnerWidth = Math.max(innerW, display.lineGutter.offsetWidth - padding) + 1;
@@ -4281,13 +4290,13 @@
     for (var i = 0; i < gutters.length; i++) {
       var name = gutters[i], style = null;
       if (typeof name != "string") { style = name.style; name = name.className; }
-      if (name == "wlmok1-linenumbers") {
+      if (name == "CodeMirror-linenumbers") {
         if (!lineNumbers) { continue }
         else { sawLineNumbers = true; }
       }
       result.push({className: name, style: style});
     }
-    if (lineNumbers && !sawLineNumbers) { result.push({className: "wlmok1-linenumbers", style: null}); }
+    if (lineNumbers && !sawLineNumbers) { result.push({className: "CodeMirror-linenumbers", style: null}); }
     return result
   }
 
@@ -4301,9 +4310,9 @@
       var ref = specs[i];
       var className = ref.className;
       var style = ref.style;
-      var gElt = gutters.appendChild(elt("div", null, "wlmok1-gutter " + className));
+      var gElt = gutters.appendChild(elt("div", null, "CodeMirror-gutter " + className));
       if (style) { gElt.style.cssText = style; }
-      if (className == "wlmok1-linenumbers") {
+      if (className == "CodeMirror-linenumbers") {
         display.lineGutter = gElt;
         gElt.style.width = (display.lineNumWidth || 1) + "px";
       }
@@ -4327,42 +4336,42 @@
     this.input = input;
 
     // Covers bottom-right square when both scrollbars are present.
-    d.scrollbarFiller = elt("div", null, "wlmok1-scrollbar-filler");
+    d.scrollbarFiller = elt("div", null, "CodeMirror-scrollbar-filler");
     d.scrollbarFiller.setAttribute("cm-not-content", "true");
     // Covers bottom of gutter when coverGutterNextToScrollbar is on
     // and h scrollbar is present.
-    d.gutterFiller = elt("div", null, "wlmok1-gutter-filler");
+    d.gutterFiller = elt("div", null, "CodeMirror-gutter-filler");
     d.gutterFiller.setAttribute("cm-not-content", "true");
     // Will contain the actual code, positioned to cover the viewport.
-    d.lineDiv = eltP("div", null, "wlmok1-code");
+    d.lineDiv = eltP("div", null, "CodeMirror-code");
     // Elements are added to these to represent selection and cursors.
     d.selectionDiv = elt("div", null, null, "position: relative; z-index: 1");
-    d.cursorDiv = elt("div", null, "wlmok1-cursors");
+    d.cursorDiv = elt("div", null, "CodeMirror-cursors");
     // A visibility: hidden element used to find the size of things.
-    d.measure = elt("div", null, "wlmok1-measure");
+    d.measure = elt("div", null, "CodeMirror-measure");
     // When lines outside of the viewport are measured, they are drawn in this.
-    d.lineMeasure = elt("div", null, "wlmok1-measure");
+    d.lineMeasure = elt("div", null, "CodeMirror-measure");
     // Wraps everything that needs to exist inside the vertically-padded coordinate system
     d.lineSpace = eltP("div", [d.measure, d.lineMeasure, d.selectionDiv, d.cursorDiv, d.lineDiv],
                       null, "position: relative; outline: none");
-    var lines = eltP("div", [d.lineSpace], "wlmok1-lines");
+    var lines = eltP("div", [d.lineSpace], "CodeMirror-lines");
     // Moved around its parent to cover visible view.
     d.mover = elt("div", [lines], null, "position: relative");
     // Set to the height of the document, allowing scrolling.
-    d.sizer = elt("div", [d.mover], "wlmok1-sizer");
+    d.sizer = elt("div", [d.mover], "CodeMirror-sizer");
     d.sizerWidth = null;
     // Behavior of elts with overflow: auto and padding is
     // inconsistent across browsers. This is used to ensure the
     // scrollable area is big enough.
     d.heightForcer = elt("div", null, null, "position: absolute; height: " + scrollerGap + "px; width: 1px;");
     // Will contain the gutters, if any.
-    d.gutters = elt("div", null, "wlmok1-gutters");
+    d.gutters = elt("div", null, "CodeMirror-gutters");
     d.lineGutter = null;
     // Actual scrollable element.
-    d.scroller = elt("div", [d.sizer, d.heightForcer, d.gutters], "wlmok1-scroll");
+    d.scroller = elt("div", [d.sizer, d.heightForcer, d.gutters], "CodeMirror-scroll");
     d.scroller.setAttribute("tabIndex", "-1");
     // The element in which the editor lives.
-    d.wrapper = elt("div", [d.scrollbarFiller, d.gutterFiller, d.scroller], "wlmok1");
+    d.wrapper = elt("div", [d.scrollbarFiller, d.gutterFiller, d.scroller], "CodeMirror");
 
     // Work around IE7 z-index bug (not perfect, hence IE7 not really being supported)
     if (ie && ie_version < 8) { d.gutters.style.zIndex = -1; d.scroller.style.paddingRight = 0; }
@@ -4786,7 +4795,7 @@
   }
 
   function setDirectionClass(cm) {
-  (cm.doc.direction == "rtl" ? addClass : rmClass)(cm.display.lineDiv, "wlmok1-rtl");
+  (cm.doc.direction == "rtl" ? addClass : rmClass)(cm.display.lineDiv, "CodeMirror-rtl");
   }
 
   function directionChanged(cm) {
@@ -5564,7 +5573,7 @@
   // It also indexes by height, and is used to convert between height
   // and line object, and to find the total height of the document.
   //
-  // See also http://marijnhaverbeke.nl/blog/wlmok1-line-tree.html
+  // See also http://marijnhaverbeke.nl/blog/codemirror-line-tree.html
 
   function LeafChunk(lines) {
     var this$1 = this;
@@ -5963,7 +5972,7 @@
     if (marker.replacedWith) {
       // Showing up as a widget implies collapsed (widget replaces text)
       marker.collapsed = true;
-      marker.widgetNode = eltP("span", [marker.replacedWith], "wlmok1-widget");
+      marker.widgetNode = eltP("span", [marker.replacedWith], "CodeMirror-widget");
       if (!options.handleMouseEvents) { marker.widgetNode.setAttribute("cm-ignore-events", "true"); }
       if (options.insertLeft) { marker.widgetNode.insertLeft = true; }
     }
@@ -6138,7 +6147,7 @@
     remove: function(at, n) { this.removeInner(at - this.first, n); },
 
     // From here, the methods are part of the public interface. Most
-    // are also available from wlmok1 (editor) instances.
+    // are also available from CodeMirror (editor) instances.
 
     getValue: function(lineSep) {
       var lines = getLines(this, this.first, this.first + this.size);
@@ -6479,7 +6488,7 @@
     unlinkDoc: function(other) {
       var this$1 = this;
 
-      if (other instanceof wlmok1) { other = other.doc; }
+      if (other instanceof CodeMirror) { other = other.doc; }
       if (this.linked) { for (var i = 0; i < this.linked.length; ++i) {
         var link = this$1.linked[i];
         if (link.doc != other) { continue }
@@ -6624,7 +6633,7 @@
     var frag = document.createDocumentFragment();
     drawSelectionCursor(cm, pos, frag);
     if (!cm.display.dragCursor) {
-      cm.display.dragCursor = elt("div", null, "wlmok1-cursors wlmok1-dragcursors");
+      cm.display.dragCursor = elt("div", null, "CodeMirror-cursors CodeMirror-dragcursors");
       cm.display.lineSpace.insertBefore(cm.display.dragCursor, cm.display.cursorDiv);
     }
     removeChildrenAndAdd(cm.display.dragCursor, frag);
@@ -6641,11 +6650,11 @@
   // handler for each editor will cause the editors to never be
   // garbage collected.
 
-  function forEachwlmok1(f) {
+  function forEachCodeMirror(f) {
     if (!document.getElementsByClassName) { return }
-    var byClass = document.getElementsByClassName("wlmok1"), editors = [];
+    var byClass = document.getElementsByClassName("CodeMirror"), editors = [];
     for (var i = 0; i < byClass.length; i++) {
-      var cm = byClass[i].wlmok1;
+      var cm = byClass[i].CodeMirror;
       if (cm) { editors.push(cm); }
     }
     if (editors.length) { editors[0].operation(function () {
@@ -6665,11 +6674,11 @@
     on(window, "resize", function () {
       if (resizeTimer == null) { resizeTimer = setTimeout(function () {
         resizeTimer = null;
-        forEachwlmok1(onResize);
+        forEachCodeMirror(onResize);
       }, 100); }
     });
     // When the window loses focus, we want to show the editor as blurred
-    on(window, "blur", function () { return forEachwlmok1(onBlur); });
+    on(window, "blur", function () { return forEachCodeMirror(onBlur); });
   }
   // Called when the window resizes
   function onResize(cm) {
@@ -7254,17 +7263,17 @@
       { document.execCommand("cut"); }
 
     // Turn mouse into crosshair when Alt is held on Mac.
-    if (code == 18 && !/\bwlmok1-crosshair\b/.test(cm.display.lineDiv.className))
+    if (code == 18 && !/\bCodeMirror-crosshair\b/.test(cm.display.lineDiv.className))
       { showCrossHair(cm); }
   }
 
   function showCrossHair(cm) {
     var lineDiv = cm.display.lineDiv;
-    addClass(lineDiv, "wlmok1-crosshair");
+    addClass(lineDiv, "CodeMirror-crosshair");
 
     function up(e) {
       if (e.keyCode == 18 || !e.altKey) {
-        rmClass(lineDiv, "wlmok1-crosshair");
+        rmClass(lineDiv, "CodeMirror-crosshair");
         off(document, "keyup", up);
         off(document, "mouseover", up);
       }
@@ -7689,24 +7698,24 @@
     clearCaches(cm);
   }
 
-  var Init = {toString: function(){return "wlmok1.Init"}};
+  var Init = {toString: function(){return "CodeMirror.Init"}};
 
   var defaults = {};
   var optionHandlers = {};
 
-  function defineOptions(wlmok1) {
-    var optionHandlers = wlmok1.optionHandlers;
+  function defineOptions(CodeMirror) {
+    var optionHandlers = CodeMirror.optionHandlers;
 
     function option(name, deflt, handle, notOnInit) {
-      wlmok1.defaults[name] = deflt;
+      CodeMirror.defaults[name] = deflt;
       if (handle) { optionHandlers[name] =
         notOnInit ? function (cm, val, old) {if (old != Init) { handle(cm, val, old); }} : handle; }
     }
 
-    wlmok1.defineOption = option;
+    CodeMirror.defineOption = option;
 
     // Passed to option handlers when there is no old value.
-    wlmok1.Init = Init;
+    CodeMirror.Init = Init;
 
     // These two are, on init, called from the constructor because they
     // have to be initialized before the editor can start at all.
@@ -7853,11 +7862,11 @@
 
   function wrappingChanged(cm) {
     if (cm.options.lineWrapping) {
-      addClass(cm.display.wrapper, "wlmok1-wrap");
+      addClass(cm.display.wrapper, "CodeMirror-wrap");
       cm.display.sizer.style.minWidth = "";
       cm.display.sizerWidth = null;
     } else {
-      rmClass(cm.display.wrapper, "wlmok1-wrap");
+      rmClass(cm.display.wrapper, "CodeMirror-wrap");
       findMaxLine(cm);
     }
     estimateLineHeights(cm);
@@ -7866,13 +7875,13 @@
     setTimeout(function () { return updateScrollbars(cm); }, 100);
   }
 
-  // A wlmok1 instance represents an editor. This is the object
+  // A CodeMirror instance represents an editor. This is the object
   // that user code is usually dealing with.
 
-  function wlmok1(place, options) {
+  function CodeMirror(place, options) {
     var this$1 = this;
 
-    if (!(this instanceof wlmok1)) { return new wlmok1(place, options) }
+    if (!(this instanceof CodeMirror)) { return new CodeMirror(place, options) }
 
     this.options = options = options ? copyObj(options) : {};
     // Determine effective options based on given values and defaults.
@@ -7883,12 +7892,12 @@
     else if (options.mode) { doc.modeOption = options.mode; }
     this.doc = doc;
 
-    var input = new wlmok1.inputStyles[options.inputStyle](this);
+    var input = new CodeMirror.inputStyles[options.inputStyle](this);
     var display = this.display = new Display(place, doc, input, options);
-    display.wrapper.wlmok1 = this;
+    display.wrapper.CodeMirror = this;
     themeChanged(this);
     if (options.lineWrapping)
-      { this.display.wrapper.className += " wlmok1-wrap"; }
+      { this.display.wrapper.className += " CodeMirror-wrap"; }
     initScrollbars(this);
 
     this.state = {
@@ -7939,9 +7948,9 @@
   }
 
   // The default configuration options.
-  wlmok1.defaults = defaults;
+  CodeMirror.defaults = defaults;
   // Functions to run when options are changed.
-  wlmok1.optionHandlers = optionHandlers;
+  CodeMirror.optionHandlers = optionHandlers;
 
   // Attach the necessary event handlers when initializing the editor
   function registerEventHandlers(cm) {
@@ -8055,7 +8064,7 @@
   }
 
   var initHooks = [];
-  wlmok1.defineInitHook = function (f) { return initHooks.push(f); };
+  CodeMirror.defineInitHook = function (f) { return initHooks.push(f); };
 
   // Indent the given line. The how parameter can be "smart",
   // "add"/null, "subtract", or "prev". When aggressive is false
@@ -8249,16 +8258,16 @@
 
   // This is not the complete set of editor methods. Most of the
   // methods defined on the Doc type are also injected into
-  // wlmok1.prototype, for backwards compatibility and
+  // CodeMirror.prototype, for backwards compatibility and
   // convenience.
 
-  function addEditorMethods(wlmok1) {
-    var optionHandlers = wlmok1.optionHandlers;
+  function addEditorMethods(CodeMirror) {
+    var optionHandlers = CodeMirror.optionHandlers;
 
-    var helpers = wlmok1.helpers = {};
+    var helpers = CodeMirror.helpers = {};
 
-    wlmok1.prototype = {
-      constructor: wlmok1,
+    CodeMirror.prototype = {
+      constructor: CodeMirror,
       focus: function(){window.focus(); this.display.input.focus();},
 
       setOption: function(option, value) {
@@ -8286,7 +8295,7 @@
       },
 
       addOverlay: methodOp(function(spec, options) {
-        var mode = spec.token ? spec : wlmok1.getMode(this.options, spec);
+        var mode = spec.token ? spec : CodeMirror.getMode(this.options, spec);
         if (mode.startState) { throw new Error("Overlays may not be stateful.") }
         insertSorted(this.state.overlays,
                      {mode: mode, modeSpec: spec, opaque: options && options.opaque,
@@ -8369,7 +8378,7 @@
       getModeAt: function(pos) {
         var mode = this.doc.mode;
         if (!mode.innerMode) { return mode }
-        return wlmok1.innerMode(mode, this.getTokenAt(pos).state).mode
+        return CodeMirror.innerMode(mode, this.getTokenAt(pos).state).mode
       },
 
       getHelper: function(pos, type) {
@@ -8587,9 +8596,9 @@
       toggleOverwrite: function(value) {
         if (value != null && value == this.state.overwrite) { return }
         if (this.state.overwrite = !this.state.overwrite)
-          { addClass(this.display.cursorDiv, "wlmok1-overwrite"); }
+          { addClass(this.display.cursorDiv, "CodeMirror-overwrite"); }
         else
-          { rmClass(this.display.cursorDiv, "wlmok1-overwrite"); }
+          { rmClass(this.display.cursorDiv, "CodeMirror-overwrite"); }
 
         signal(this, "overwriteToggle", this, this.state.overwrite);
       },
@@ -8681,14 +8690,14 @@
       getScrollerElement: function(){return this.display.scroller},
       getGutterElement: function(){return this.display.gutters}
     };
-    eventMixin(wlmok1);
+    eventMixin(CodeMirror);
 
-    wlmok1.registerHelper = function(type, name, value) {
-      if (!helpers.hasOwnProperty(type)) { helpers[type] = wlmok1[type] = {_global: []}; }
+    CodeMirror.registerHelper = function(type, name, value) {
+      if (!helpers.hasOwnProperty(type)) { helpers[type] = CodeMirror[type] = {_global: []}; }
       helpers[type][name] = value;
     };
-    wlmok1.registerGlobalHelper = function(type, name, predicate, value) {
-      wlmok1.registerHelper(type, name, value);
+    CodeMirror.registerGlobalHelper = function(type, name, predicate, value) {
+      CodeMirror.registerHelper(type, name, value);
       helpers[type]._global.push({pred: predicate, val: value});
     };
   }
@@ -9177,7 +9186,7 @@
 
   function isInGutter(node) {
     for (var scan = node; scan; scan = scan.parentNode)
-      { if (/wlmok1-gutter-wrapper/.test(scan.className)) { return true } }
+      { if (/CodeMirror-gutter-wrapper/.test(scan.className)) { return true } }
     return false
   }
 
@@ -9398,7 +9407,7 @@
       if (input.composing) { input.composing.range.clear(); }
       input.composing = {
         start: start,
-        range: cm.markText(start, cm.getCursor("to"), {className: "wlmok1-composing"})
+        range: cm.markText(start, cm.getCursor("to"), {className: "CodeMirror-composing"})
       };
     });
     on(te, "compositionend", function () {
@@ -9568,7 +9577,7 @@
       if (this$1.composing) {
         this$1.composing.range.clear();
         this$1.composing.range = cm.markText(this$1.composing.start, cm.getCursor("to"),
-                                           {className: "wlmok1-composing"});
+                                           {className: "CodeMirror-composing"});
       }
     });
     return true
@@ -9725,100 +9734,100 @@
     };
 
     textarea.style.display = "none";
-    var cm = wlmok1(function (node) { return textarea.parentNode.insertBefore(node, textarea.nextSibling); },
+    var cm = CodeMirror(function (node) { return textarea.parentNode.insertBefore(node, textarea.nextSibling); },
       options);
     return cm
   }
 
-  function addLegacyProps(wlmok1) {
-    wlmok1.off = off;
-    wlmok1.on = on;
-    wlmok1.wheelEventPixels = wheelEventPixels;
-    wlmok1.Doc = Doc;
-    wlmok1.splitLines = splitLinesAuto;
-    wlmok1.countColumn = countColumn;
-    wlmok1.findColumn = findColumn;
-    wlmok1.isWordChar = isWordCharBasic;
-    wlmok1.Pass = Pass;
-    wlmok1.signal = signal;
-    wlmok1.Line = Line;
-    wlmok1.changeEnd = changeEnd;
-    wlmok1.scrollbarModel = scrollbarModel;
-    wlmok1.Pos = Pos;
-    wlmok1.cmpPos = cmp;
-    wlmok1.modes = modes;
-    wlmok1.mimeModes = mimeModes;
-    wlmok1.resolveMode = resolveMode;
-    wlmok1.getMode = getMode;
-    wlmok1.modeExtensions = modeExtensions;
-    wlmok1.extendMode = extendMode;
-    wlmok1.copyState = copyState;
-    wlmok1.startState = startState;
-    wlmok1.innerMode = innerMode;
-    wlmok1.commands = commands;
-    wlmok1.keyMap = keyMap;
-    wlmok1.keyName = keyName;
-    wlmok1.isModifierKey = isModifierKey;
-    wlmok1.lookupKey = lookupKey;
-    wlmok1.normalizeKeyMap = normalizeKeyMap;
-    wlmok1.StringStream = StringStream;
-    wlmok1.SharedTextMarker = SharedTextMarker;
-    wlmok1.TextMarker = TextMarker;
-    wlmok1.LineWidget = LineWidget;
-    wlmok1.e_preventDefault = e_preventDefault;
-    wlmok1.e_stopPropagation = e_stopPropagation;
-    wlmok1.e_stop = e_stop;
-    wlmok1.addClass = addClass;
-    wlmok1.contains = contains;
-    wlmok1.rmClass = rmClass;
-    wlmok1.keyNames = keyNames;
+  function addLegacyProps(CodeMirror) {
+    CodeMirror.off = off;
+    CodeMirror.on = on;
+    CodeMirror.wheelEventPixels = wheelEventPixels;
+    CodeMirror.Doc = Doc;
+    CodeMirror.splitLines = splitLinesAuto;
+    CodeMirror.countColumn = countColumn;
+    CodeMirror.findColumn = findColumn;
+    CodeMirror.isWordChar = isWordCharBasic;
+    CodeMirror.Pass = Pass;
+    CodeMirror.signal = signal;
+    CodeMirror.Line = Line;
+    CodeMirror.changeEnd = changeEnd;
+    CodeMirror.scrollbarModel = scrollbarModel;
+    CodeMirror.Pos = Pos;
+    CodeMirror.cmpPos = cmp;
+    CodeMirror.modes = modes;
+    CodeMirror.mimeModes = mimeModes;
+    CodeMirror.resolveMode = resolveMode;
+    CodeMirror.getMode = getMode;
+    CodeMirror.modeExtensions = modeExtensions;
+    CodeMirror.extendMode = extendMode;
+    CodeMirror.copyState = copyState;
+    CodeMirror.startState = startState;
+    CodeMirror.innerMode = innerMode;
+    CodeMirror.commands = commands;
+    CodeMirror.keyMap = keyMap;
+    CodeMirror.keyName = keyName;
+    CodeMirror.isModifierKey = isModifierKey;
+    CodeMirror.lookupKey = lookupKey;
+    CodeMirror.normalizeKeyMap = normalizeKeyMap;
+    CodeMirror.StringStream = StringStream;
+    CodeMirror.SharedTextMarker = SharedTextMarker;
+    CodeMirror.TextMarker = TextMarker;
+    CodeMirror.LineWidget = LineWidget;
+    CodeMirror.e_preventDefault = e_preventDefault;
+    CodeMirror.e_stopPropagation = e_stopPropagation;
+    CodeMirror.e_stop = e_stop;
+    CodeMirror.addClass = addClass;
+    CodeMirror.contains = contains;
+    CodeMirror.rmClass = rmClass;
+    CodeMirror.keyNames = keyNames;
   }
 
   // EDITOR CONSTRUCTOR
 
-  defineOptions(wlmok1);
+  defineOptions(CodeMirror);
 
-  addEditorMethods(wlmok1);
+  addEditorMethods(CodeMirror);
 
-  // Set up methods on wlmok1's prototype to redirect to the editor's document.
+  // Set up methods on CodeMirror's prototype to redirect to the editor's document.
   var dontDelegate = "iter insert remove copy getEditor constructor".split(" ");
   for (var prop in Doc.prototype) { if (Doc.prototype.hasOwnProperty(prop) && indexOf(dontDelegate, prop) < 0)
-    { wlmok1.prototype[prop] = (function(method) {
+    { CodeMirror.prototype[prop] = (function(method) {
       return function() {return method.apply(this.doc, arguments)}
     })(Doc.prototype[prop]); } }
 
   eventMixin(Doc);
-  wlmok1.inputStyles = {"textarea": TextareaInput, "contenteditable": ContentEditableInput};
+  CodeMirror.inputStyles = {"textarea": TextareaInput, "contenteditable": ContentEditableInput};
 
   // Extra arguments are stored as the mode's dependencies, which is
   // used by (legacy) mechanisms like loadmode.js to automatically
   // load a mode. (Preferred mechanism is the require/define calls.)
-  wlmok1.defineMode = function(name/*, mode, …*/) {
-    if (!wlmok1.defaults.mode && name != "null") { wlmok1.defaults.mode = name; }
+  CodeMirror.defineMode = function(name/*, mode, â€¦*/) {
+    if (!CodeMirror.defaults.mode && name != "null") { CodeMirror.defaults.mode = name; }
     defineMode.apply(this, arguments);
   };
 
-  wlmok1.defineMIME = defineMIME;
+  CodeMirror.defineMIME = defineMIME;
 
   // Minimal default mode.
-  wlmok1.defineMode("null", function () { return ({token: function (stream) { return stream.skipToEnd(); }}); });
-  wlmok1.defineMIME("text/plain", "null");
+  CodeMirror.defineMode("null", function () { return ({token: function (stream) { return stream.skipToEnd(); }}); });
+  CodeMirror.defineMIME("text/plain", "null");
 
   // EXTENSIONS
 
-  wlmok1.defineExtension = function (name, func) {
-    wlmok1.prototype[name] = func;
+  CodeMirror.defineExtension = function (name, func) {
+    CodeMirror.prototype[name] = func;
   };
-  wlmok1.defineDocExtension = function (name, func) {
+  CodeMirror.defineDocExtension = function (name, func) {
     Doc.prototype[name] = func;
   };
 
-  wlmok1.fromTextArea = fromTextArea;
+  CodeMirror.fromTextArea = fromTextArea;
 
-  addLegacyProps(wlmok1);
+  addLegacyProps(CodeMirror);
 
-  wlmok1.version = "5.53.2";
+  CodeMirror.version = "5.53.2";
 
-  return wlmok1;
+  return CodeMirror;
 
 })));
